@@ -481,4 +481,4 @@ async def handle_free_topics(message: types.Message):
         return
 
 
->>>>>>> 95f6235581c2d18e738fd6bdbbb09f981b7442c7
+
