@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 
 import os
 from dotenv import load_dotenv
@@ -133,7 +133,7 @@ async def adapt_for_platform(content: str, target_platform: str = "vk") -> str:
         )
 
     return await _call_openai(instruction, max_tokens=800, temperature=0.6)
-=======
+
 
 import os
 from dotenv import load_dotenv
@@ -268,4 +268,4 @@ async def adapt_for_platform(content: str, target_platform: str = "vk") -> str:
         )
 
     return await _call_openai(instruction, max_tokens=800, temperature=0.6)
->>>>>>> 95f6235581c2d18e738fd6bdbbb09f981b7442c7
+
