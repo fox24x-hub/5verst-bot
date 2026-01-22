@@ -1,13 +1,5 @@
-# main.py
-import asyncio
-import logging
-import os
-
-from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.memory import MemoryStorage
-from dotenv import load_dotenv
-
 from handlers import assistant_router, content_router
+
 
 
 load_dotenv()
