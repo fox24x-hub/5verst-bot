@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # handlers/content.py
 
 from aiogram import Router, types
@@ -49,7 +49,7 @@ async def cmd_adapt_vk(message: types.Message):
     adapted = await adapt_for_platform(original_text, "vk")
 
     await message.reply(adapted)
-=======
+
 # handlers/content.py
 
 from aiogram import Router, types
@@ -100,4 +100,4 @@ async def cmd_adapt_vk(message: types.Message):
     adapted = await adapt_for_platform(original_text, "vk")
 
     await message.reply(adapted)
->>>>>>> 95f6235581c2d18e738fd6bdbbb09f981b7442c7
+
