@@ -1,11 +1,6 @@
-# handlers/content.py
+from aiogram import Router
 
-from aiogram import Router, types
-from aiogram.filters import Command
-
-from services.openai_service import generate_post, adapt_for_platform
-
-router = Router()
+content_router = Router()
 
 
 @router.message(Command("create_post"))
