@@ -1,11 +1,16 @@
+from aiogram import Router, types, F
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext  # если используешь FSM
 
-from aiogram import Router
-router = Router()
+from services.openai_service import generate_post
+from keyboards.main import main_keyboard  # если нужно
 
-
+router = Router()  # обязательно до декораторов
 
 @router.message(Command("create_post"))
 async def cmd_create_post(message: types.Message):
+    ...
+
     """
     Простая версия: /create_post Текст темы
     Потом можно усложнить типами постов.
