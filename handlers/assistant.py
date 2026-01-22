@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -259,7 +259,7 @@ async def universal_handler(message: types.Message):
         return
 
     await message.answer("Не понял команду. Используй кнопки:", reply_markup=main_keyboard)
-=======
+
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
