@@ -1,11 +1,7 @@
 
-# handlers/content.py
-
-from aiogram import Router, types
-from aiogram.filters import Command
-from services.openai_service import generate_post, adapt_for_platform
-
+from aiogram import Router
 router = Router()
+
 
 
 @router.message(Command("create_post"))
@@ -56,7 +52,7 @@ from aiogram import Router, types
 from aiogram.filters import Command
 from services.openai_service import generate_post, adapt_for_platform
 
-router = Router()
+
 
 
 @router.message(Command("create_post"))
