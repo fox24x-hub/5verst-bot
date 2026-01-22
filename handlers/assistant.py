@@ -1,4 +1,3 @@
-
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -11,6 +10,8 @@ from datetime import datetime
 from keyboards.main import main_keyboard, helper_menu, posts_menu, remove_keyboard
 from services.openai_service import generate_post, answer_question
 from states.report import ReportStates
+
+router = Router()  # ← ОБЯЗАТЕЛЬНО до всех @router.message
 
 
 class AddExampleStates(StatesGroup):
