@@ -1,10 +1,14 @@
 
-from aiogram import Router
-router = Router()
+from aiogram import Router, types, F
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup  # ← вот эта строка обязательна
+
 
 
 class AddExampleStates(StatesGroup):
     waiting_example = State()
+
 
 class ToneSettingsStates(StatesGroup):
     waiting_tone_choice = State()
