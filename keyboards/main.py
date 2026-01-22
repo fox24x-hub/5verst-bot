@@ -1,6 +1,6 @@
+# keyboards/main.py
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
-# Главная кнопка
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🚀 Помощник")],
@@ -8,7 +8,6 @@ main_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 
-# Меню помощника
 helper_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📝 Создать пост")],
@@ -19,7 +18,6 @@ helper_menu = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 
-# Меню постов
 posts_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🧊 Волонтёры"), KeyboardButton(text="🔔 Напоминание")],
@@ -30,5 +28,4 @@ posts_menu = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 
-# Убрать клавиатуру
 remove_keyboard = ReplyKeyboardRemove()

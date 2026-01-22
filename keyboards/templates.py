@@ -1,3 +1,4 @@
+# keyboards/templates.py
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 templates_keyboard = ReplyKeyboardMarkup(
