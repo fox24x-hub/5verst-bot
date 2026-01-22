@@ -7,7 +7,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
 
-from handlers import assistant_router, content_router  # из handlers/__init__.py
+from handlers import assistant_router, content_router
+
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
