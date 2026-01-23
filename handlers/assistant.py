@@ -1,7 +1,9 @@
 import os
-
 from aiogram import Router
-from aiogram.fsm.state import StatesGroup, State  # то, что добавили до этого
+from aiogram.filters import Command
+from aiogram.fsm.state import StatesGroup, State
+# остальные импорты (types, F и т.д.) оставь как были
+
 
 
 assistant_router = Router()
@@ -70,7 +72,7 @@ waiting_free_topic_vk: set[int] = set()
 
 # ========= главное меню и панель =========
 
-@router.message(Command("start", "panel", "help"))
+@assistant_router.message(Command("start", "panel", "help"))
 async def show_main_menu(message: types.Message):
     await message.answer(
         "🚀 **5 ВЁРСТ — Помощник контента**\n\n"
@@ -80,7 +82,7 @@ async def show_main_menu(message: types.Message):
     )
 
 
-@router.message(Command("panel"))
+@assistant_router.message(Command("panel"))
 async def show_panel(message: types.Message):
     await message.answer(
         "Выбери шаблон поста:",
@@ -88,27 +90,27 @@ async def show_panel(message: types.Message):
     )
 
 
-@router.message(F.text == "🔙 Назад")
+@assistant_router.message(F.text == "🔙 Назад")
 async def go_back(message: types.Message):
     await message.answer("Главное меню:", reply_markup=main_keyboard)
 
 
-@router.message(F.text == "🚀 Помощник")
+@assistant_router.message(F.text == "🚀 Помощник")
 async def show_helper_menu(message: types.Message):
     await message.answer("Что нужно сделать?", reply_markup=helper_menu)
 
 
-@router.message(F.text == "📝 Создать пост")
+@assistant_router.message(F.text == "📝 Создать пост")
 async def show_posts_menu(message: types.Message):
     await message.answer("Выбери тип поста:", reply_markup=posts_menu)
 
 
-@router.message(F.text == "📊 Статистика")
+@assistant_router.message(F.text == "📊 Статистика")
 async def stats_shortcut(message: types.Message):
     await cmd_stats_posts(message)
 
 
-@router.message(F.text == "❓ Спросить GPT")
+@assistant_router.message(F.text == "❓ Спросить GPT")
 async def ask_shortcut(message: types.Message):
     await message.answer(
         "💡 Напиши вопрос после /ask:\n\n"
@@ -119,28 +121,28 @@ async def ask_shortcut(message: types.Message):
 
 # ========= кнопки с готовыми шаблонами =========
 
-@router.message(F.text == "🧊 Волонтёры")
+@assistant_router.message(F.text == "🧊 Волонтёры")
 async def monday_volunteers(message: types.Message):
     topic = "Пост понедельник: сбор команды волонтёров на встречу 5 вёрст."
     text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
     await message.answer(text, reply_markup=main_keyboard)
 
 
-@router.message(F.text == "🔔 Напоминание")
+@assistant_router.message(F.text == "🔔 Напоминание")
 async def friday_reminder(message: types.Message):
     topic = "Пост пятница: напоминание о встречу 5 вёрст."
     text = await generate_post(topic=topic, post_type="event_announcement", platform="telegram")
     await message.answer(text, reply_markup=main_keyboard)
 
 
-@router.message(F.text == "🙏 Спасибо волонтёрам")
+@assistant_router.message(F.text == "🙏 Спасибо волонтёрам")
 async def sunday_thanks(message: types.Message):
     topic = "Благодарность волонтёрам за помощь."
     text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
     await message.answer(text, reply_markup=main_keyboard)
 
 
-@router.message(F.text == "🧊 Пн: волонтёры")
+@assistant_router.message(F.text == "🧊 Пн: волонтёры")
 async def monday_volunteers_template(message: types.Message):
     topic = (
         "Пост понедельник: сбор команды волонтёров на ближайшую субботнюю встречу "
@@ -151,7 +153,7 @@ async def monday_volunteers_template(message: types.Message):
     await message.answer(text)
 
 
-@router.message(F.text == "🔔 Пт: напоминание")
+@assistant_router.message(F.text == "🔔 Пт: напоминание")
 async def friday_reminder_template(message: types.Message):
     topic = (
         "Пост пятница: напоминание участникам о завтрашней встрече 5 вёрст. "
@@ -162,7 +164,7 @@ async def friday_reminder_template(message: types.Message):
     await message.answer(text)
 
 
-@router.message(F.text == "🙏 Вс: спасибо волонтёрам")
+@assistant_router.message(F.text == "🙏 Вс: спасибо волонтёрам")
 async def sunday_thanks_template(message: types.Message):
     topic = (
         "Пост воскресенье: благодарность волонтёрам за прошедшую встречу 5 вёрст. "
@@ -175,8 +177,8 @@ async def sunday_thanks_template(message: types.Message):
 
 # ========= FSM отчёта =========
 
-@router.message(F.text == "📊 Отчёт")
-@router.message(F.text == "📊 Сб: отчёт")
+@assistant_router.message(F.text == "📊 Отчёт")
+@assistant_router.message(F.text == "📊 Сб: отчёт")
 async def saturday_report_start(message: types.Message, state: FSMContext):
     await state.set_state(ReportStates.waiting_total)
     await message.answer(
@@ -186,7 +188,7 @@ async def saturday_report_start(message: types.Message, state: FSMContext):
     )
 
 
-@router.message(ReportStates.waiting_total)
+@assistant_router.message(ReportStates.waiting_total)
 async def report_total(message: types.Message, state: FSMContext):
     if not message.text.isdigit():
         await message.answer("Отправь число участников (только цифры).")
@@ -196,7 +198,7 @@ async def report_total(message: types.Message, state: FSMContext):
     await message.answer("Сколько были впервые?")
 
 
-@router.message(ReportStates.waiting_first_timers)
+@assistant_router.message(ReportStates.waiting_first_timers)
 async def report_first_timers(message: types.Message, state: FSMContext):
     if not message.text.isdigit():
         await message.answer("Отправь число новичков (только цифры).")
@@ -206,7 +208,7 @@ async def report_first_timers(message: types.Message, state: FSMContext):
     await message.answer("Сколько гостей из других локаций?")
 
 
-@router.message(ReportStates.waiting_guests)
+@assistant_router.message(ReportStates.waiting_guests)
 async def report_guests(message: types.Message, state: FSMContext):
     if not message.text.isdigit():
         await message.answer("Отправь число гостей (только цифры).")
@@ -216,7 +218,7 @@ async def report_guests(message: types.Message, state: FSMContext):
     await message.answer("Сколько волонтёров помогали?")
 
 
-@router.message(ReportStates.waiting_volunteers)
+@assistant_router.message(ReportStates.waiting_volunteers)
 async def report_volunteers(message: types.Message, state: FSMContext):
     if not message.text.isdigit():
         await message.answer("Отправь число волонтёров (только цифры).")
@@ -226,7 +228,7 @@ async def report_volunteers(message: types.Message, state: FSMContext):
     await message.answer("Особенный момент встречи? (или напиши 'нет')")
 
 
-@router.message(ReportStates.waiting_highlight)
+@assistant_router.message(ReportStates.waiting_highlight)
 async def report_highlight(message: types.Message, state: FSMContext):
     data = await state.get_data()
     await state.clear()
@@ -250,7 +252,7 @@ async def report_highlight(message: types.Message, state: FSMContext):
 
 # ========= свободные посты =========
 
-@router.message(F.text == "📝 Свободный пост")
+@assistant_router.message(F.text == "📝 Свободный пост")
 async def free_post_telegram(message: types.Message):
     waiting_free_topic_tg.add(message.from_user.id)
     await message.answer(
@@ -260,8 +262,8 @@ async def free_post_telegram(message: types.Message):
     )
 
 
-@router.message(F.text == "📝 Свободный пост (VK)")
-@router.message(F.text == "📝 VK пост")
+@assistant_router.message(F.text == "📝 Свободный пост (VK)")
+@assistant_router.message(F.text == "📝 VK пост")
 async def free_post_vk(message: types.Message):
     waiting_free_topic_vk.add(message.from_user.id)
     await message.answer(
@@ -273,13 +275,13 @@ async def free_post_vk(message: types.Message):
 
 # ========= работа с примерами и тоном =========
 
-@router.message(Command("add_example"))
+@assistant_router.message(Command("add_example"))
 async def cmd_add_example(message: types.Message, state: FSMContext):
     await state.set_state(AddExampleStates.waiting_example)
     await message.answer("📚 Отправь пример удачного поста для обучения.")
 
 
-@router.message(AddExampleStates.waiting_example)
+@assistant_router.message(AddExampleStates.waiting_example)
 async def save_example(message: types.Message, state: FSMContext):
     if message.text.startswith("/"):
         await state.clear()
@@ -301,7 +303,7 @@ async def save_example(message: types.Message, state: FSMContext):
     )
 
 
-@router.message(Command("tone_settings"))
+@assistant_router.message(Command("tone_settings"))
 async def cmd_tone_settings(message: types.Message, state: FSMContext):
     current_settings = load_user_settings(message.from_user.id)
     current_tone = current_settings.get("tone", "neutral")
@@ -323,7 +325,7 @@ async def cmd_tone_settings(message: types.Message, state: FSMContext):
     )
 
 
-@router.message(ToneSettingsStates.waiting_tone_choice)
+@assistant_router.message(ToneSettingsStates.waiting_tone_choice)
 async def set_tone(message: types.Message, state: FSMContext):
     tone_map = {
         "🔥 Теплый": "warm",
@@ -339,7 +341,7 @@ async def set_tone(message: types.Message, state: FSMContext):
     await message.answer(f"✅ Тон: {message.text}", reply_markup=main_keyboard)
 
 
-@router.message(Command("stats_examples"))
+@assistant_router.message(Command("stats_examples"))
 async def cmd_stats_examples(message: types.Message):
     examples = load_examples()
     user_settings = load_user_settings(message.from_user.id)
@@ -355,7 +357,7 @@ async def cmd_stats_posts(message: types.Message):
 
 # ========= команды /ask и help =========
 
-@router.message(Command("ask"))
+@assistant_router.message(Command("ask"))
 async def cmd_ask(message: types.Message):
     args = message.text.split(maxsplit=1)
     if len(args) < 2:
@@ -372,7 +374,7 @@ async def cmd_ask(message: types.Message):
     await message.reply(answer, reply_markup=main_keyboard)
 
 
-@router.message(Command("help"))
+@assistant_router.message(Command("help"))
 async def cmd_help(message: types.Message):
     await message.reply(
         "📚 КОМАНДЫ БОТА 5 ВЁРСТ\n\n"
@@ -389,7 +391,7 @@ async def cmd_help(message: types.Message):
 
 # ========= универсальный хендлер =========
 
-@router.message()
+@assistant_router.message
 async def universal_handler(message: types.Message):
     user_id = message.from_user.id
 
