@@ -3,6 +3,7 @@ from aiogram import Router
 content_router = Router()
 
 
+
 @router.message(Command("create_post"))
 async def cmd_create_post(message: types.Message):
     """
