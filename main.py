@@ -1,5 +1,12 @@
-from handlers import assistant_router, content_router
+import asyncio
+import logging
+import os
 
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from dotenv import load_dotenv
+
+from handlers import assistant_router, content_router
 
 
 load_dotenv()
@@ -16,6 +23,9 @@ else:
 async def main():
     print("ENV =", ENV)
     print("API_TOKEN =", API_TOKEN)
+
+    if not API_TOKEN:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN / DEV_TELEGRAM_BOT_TOKEN не задан в .env")
 
     bot = Bot(token=API_TOKEN)
     storage = MemoryStorage()
