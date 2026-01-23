@@ -1,7 +1,6 @@
 import os
 import json
 from datetime import datetime
-from collections import defaultdict
 
 STATS_FILE = "data/users_stats.json"
 os.makedirs("data", exist_ok=True)
@@ -40,7 +39,7 @@ def track_user_action(user_id: int, action: str):
             "user_id": user_id,
             "first_seen": datetime.now().isoformat(),
             "last_action": None,
-            "actions": defaultdict(int),
+            "actions": {},
             "total_actions": 0
         }
     
@@ -115,7 +114,7 @@ def format_stats_report() -> str:
         report += f"   {actions_str}\n\n"
     
     # Статистика по типам действий
-    action_totals = defaultdict(int)
+    action_totals = {}
     for user_data in stats.values():
         for action, count in user_data.get("actions", {}).items():
             action_totals[action] += count
