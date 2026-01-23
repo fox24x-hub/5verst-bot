@@ -1,4 +1,7 @@
 from aiogram import Router
+from aiogram import types
+from aiogram.filters import Command
+from services.openai_service import generate_post, adapt_for_platform
 
 content_router = Router()
 
