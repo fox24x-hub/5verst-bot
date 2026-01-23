@@ -1,6 +1,6 @@
-from aiogram.fsm.state import StatesGroup, State
-# или, если используешь другую версию:
-# from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram import Router
+from aiogram.fsm.state import StatesGroup, State  # то, что добавили до этого
+
 
 router = Router()
 
