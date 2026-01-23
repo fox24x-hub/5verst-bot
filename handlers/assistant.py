@@ -420,6 +420,32 @@ async def cmd_users_stats(message: types.Message):
     report = format_stats_report()
     await message.answer(report, parse_mode="Markdown")
 
+@assistant_router.message(Command("dump_examples"))
+async def cmd_dump_examples(message: types.Message):
+        """
+            Send posts_examples.json as file for admin only
+                """
+        from services.stats_service import ADMIN_ID
+
+    if message.from_user.id != ADMIN_ID:
+                await message.answer(
+                                "❌ This command is only available for administrator."
+                            )
+                return
+
+    if not os.path.exists(EXAMPLES_FILE):
+                await message.answer("📄 posts_examples.json not found. Please add examples first.")
+                return
+
+    try:
+                with open(EXAMPLES_FILE, "rb") as f:
+                                await message.answer_document(
+                                                    types.FSInputFile(EXAMPLES_FILE),
+                                                    caption="💾 posts_examples.json backup"
+                                                )
+                        except Exception as e:
+                                    await message.answer(f"❌ Error sending file: {str(e)}")
+
 # ========= универсальный хендлер =========
 
 @assistant_router.message()
