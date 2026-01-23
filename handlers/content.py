@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram import types
 from aiogram.filters import Command
 from services.openai_service import generate_post, adapt_for_platform
+from services.stats_service import track_user_action
 
 content_router = Router()
 
@@ -24,6 +25,7 @@ async def cmd_create_post(message: types.Message):
     topic = args[1].strip()
 
     await message.reply("⏳ Генерирую пост...")
+        track_user_action(message.from_user.id, "generate_post")
 
     post_text = await generate_post(
         topic=topic,
@@ -49,6 +51,7 @@ async def cmd_adapt_vk(message: types.Message):
 
     original_text = message.reply_to_message.text
     await message.reply("⏳ Адаптирую для VK...")
+    track_user_action(message.from_user.id, "adapt_vk")
 
     adapted = await adapt_for_platform(original_text, "vk")
 
