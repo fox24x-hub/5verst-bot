@@ -1,9 +1,14 @@
 import os
-from aiogram import Router
-from aiogram.filters import Command
-from aiogram.fsm.state import StatesGroup, State
-# остальные импорты (types, F и т.д.) оставь как были
+import json
+from datetime import datetime
 
+from aiogram import Router, F, types
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+
+from keyboards import main_keyboard, templates_keyboard, helper_menu, posts_menu, remove_keyboard
+from services.openai_service import generate_post, answer_question
 
 
 assistant_router = Router()
@@ -16,6 +21,14 @@ class AddExampleStates(StatesGroup):
 
 class ToneSettingsStates(StatesGroup):
     waiting_tone_choice = State()
+
+
+class ReportStates(StatesGroup):
+    waiting_total = State()
+    waiting_first_timers = State()
+    waiting_guests = State()
+    waiting_volunteers = State()
+    waiting_highlight = State()
 
 
 # ========= файлы с данными =========
@@ -391,7 +404,7 @@ async def cmd_help(message: types.Message):
 
 # ========= универсальный хендлер =========
 
-@assistant_router.message
+@assistant_router.message()
 async def universal_handler(message: types.Message):
     user_id = message.from_user.id
 
