@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.fsm.state import StatesGroup, State  # то, что добавили до этого
 
 
-router = Router()
+assistant_router = Router()
 
 # ========= FSM состояния =========
 
