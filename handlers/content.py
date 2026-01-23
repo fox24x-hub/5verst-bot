@@ -4,7 +4,7 @@ content_router = Router()
 
 
 
-@router.message(Command("create_post"))
+@content_router.message(Command("create_post"))
 async def cmd_create_post(message: types.Message):
     """
     Использование:
@@ -31,7 +31,7 @@ async def cmd_create_post(message: types.Message):
     await message.reply(post_text)
 
 
-@router.message(Command("adapt_vk"))
+@content_router.message(Command("adapt_vk"))
 async def cmd_adapt_vk(message: types.Message):
     """
     Адаптация текста под VK.
