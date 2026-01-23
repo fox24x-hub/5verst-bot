@@ -25,7 +25,7 @@ async def cmd_create_post(message: types.Message):
     topic = args[1].strip()
 
     await message.reply("⏳ Генерирую пост...")
-        track_user_action(message.from_user.id, "generate_post")
+    track_user_action(message.from_user.id, "generate_post")
 
     post_text = await generate_post(
         topic=topic,
@@ -51,7 +51,7 @@ async def cmd_adapt_vk(message: types.Message):
 
     original_text = message.reply_to_message.text
     await message.reply("⏳ Адаптирую для VK...")
-    track_user_action(message.from_user.id, "adapt_vk")
+track_user_action(message.from_user.id, "adapt_vk")
 
     adapted = await adapt_for_platform(original_text, "vk")
 
