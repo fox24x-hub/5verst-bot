@@ -51,8 +51,8 @@ async def cmd_adapt_vk(message: types.Message):
 
     original_text = message.reply_to_message.text
     await message.reply("⏳ Адаптирую для VK...")
-track_user_action(message.from_user.id, "adapt_vk")
+    track_user_action(message.from_user.id, "adapt_vk")
 
-adapted = await adapt_for_platform(original_text, "vk")
+    adapted = await adapt_for_platform(original_text, "vk")
 
     await message.reply(adapted)
