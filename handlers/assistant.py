@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 from keyboards import main_keyboard, templates_keyboard, helper_menu, posts_menu, remove_keyboard
+
 from services.openai_service import generate_post, answer_question
 
 
