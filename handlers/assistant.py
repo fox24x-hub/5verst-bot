@@ -10,6 +10,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 from keyboards import main_keyboard, helper_menu, posts_menu, remove_keyboard, templates_keyboard
 from services.openai_service import generate_post, answer_question
+from services.stats_service import track_user_action
 
 
 assistant_router = Router()
@@ -443,3 +444,21 @@ async def universal_handler(message: types.Message):
         "Не понял команду. Используй кнопки:",
         reply_markup=main_keyboard,
     )
+
+
+# ========= admin statistics command =========
+@assistant_router.message(Command("users_stats"))
+async def cmd_users_stats(message: types.Message):
+    """
+    Show usage statistics only for admin
+    """
+    from services.stats_service import ADMIN_ID, format_stats_report
+    
+    if message.from_user.id != ADMIN_ID:
+        await message.answer(
+            "❌ This command is only available for administrator."
+        )
+        return
+    
+    report = format_stats_report()
+    await message.answer(report, parse_mode="Markdown")
