@@ -403,6 +403,22 @@ async def cmd_help(message: types.Message):
         "→ Показать кнопки с шаблонами постов.",
     )
 
+# ========= admin statistics command =========
+@assistant_router.message(Command("users_stats"))
+async def cmd_users_stats(message: types.Message):
+    """
+    Show usage statistics only for admin
+    """
+    from services.stats_service import ADMIN_ID, format_stats_report
+    
+    if message.from_user.id != ADMIN_ID:
+        await message.answer(
+            "❌ This command is only available for administrator."
+        )
+        return
+    
+    report = format_stats_report()
+    await message.answer(report, parse_mode="Markdown")
 
 # ========= универсальный хендлер =========
 
@@ -446,19 +462,4 @@ async def universal_handler(message: types.Message):
     )
 
 
-# ========= admin statistics command =========
-@assistant_router.message(Command("users_stats"))
-async def cmd_users_stats(message: types.Message):
-    """
-    Show usage statistics only for admin
-    """
-    from services.stats_service import ADMIN_ID, format_stats_report
-    
-    if message.from_user.id != ADMIN_ID:
-        await message.answer(
-            "❌ This command is only available for administrator."
-        )
-        return
-    
-    report = format_stats_report()
-    await message.answer(report, parse_mode="Markdown")
+
