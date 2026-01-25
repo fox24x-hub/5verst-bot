@@ -118,18 +118,13 @@ async def generate_post(
 
 
 async def answer_question(question: str) -> str:
-    """
-    Ответы для /ask — про формулировки, тексты, соцсети, вовлечение, простые метрики.
-    """
     user_content = (
-        "Ответь на вопрос организатора/волонтёра движения 5 вёрст.\n"
-        "Вопрос может касаться формулировок постов, описаний групп, рубрик, вовлечения, простого анализа активности.\n"
-        "Дай структурированный ответ (пункты, чек-лист, примеры формулировок), "
-        "без тренировочных и медицинских советов.\n\n"
+        "Ты — контент‑ассистент движения «5 вёрст». "
+        "Помоги ответить на вопрос по формулировкам, постам и соцсетям.\n\n"
         f"Вопрос: {question}"
     )
+    return await _call_openai(user_content, max_tokens=400, temperature=0.7)
 
-    return await _call_openai(user_content, max_tokens=800, temperature=0.6)
 
 
 async def adapt_for_platform(content: str, target_platform: str = "vk") -> str:
@@ -151,4 +146,4 @@ async def adapt_for_platform(content: str, target_platform: str = "vk") -> str:
             f"Текст:\n{content}"
         )
 
-    return await _call_openai(instruction, max_tokens=800, temperature=0.6)
+    return await _call_openai(instruction, max_tokens=800, temperature=0.7)
