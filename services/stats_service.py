@@ -117,7 +117,7 @@ def format_stats_report() -> str:
     action_totals = {}
     for user_data in stats.values():
         for action, count in user_data.get("actions", {}).items():
-        action_totals[action] = action_totals.get(action, 0) + count    
+                action_totals[action] = action_totals.get(action, 0) + count    
     report += "\n📌 **ДЕЙСТВИЯ ПО ТИПАМ:**\n\n"
     for action, count in sorted(action_totals.items(), key=lambda x: x[1], reverse=True):
         percentage = (count / total_actions * 100) if total_actions > 0 else 0
