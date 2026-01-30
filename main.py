@@ -1,42 +1,66 @@
 import asyncio
 import logging
 import os
-
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
-
+from fastapi import FastAPI, Request
 from handlers import assistant_router, content_router
-
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-ENV = os.getenv("ENV", "dev")  # "dev" или "prod"
-
+ENV = os.getenv("ENV", "dev") # "dev" или "prod"
 if ENV == "prod":
     API_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 else:
     API_TOKEN = os.getenv("DEV_TELEGRAM_BOT_TOKEN")
 
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "http://localhost:8000")
+WEBHOOK_PATH = "/webhook/telegram"
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "your-secret-key")
 
-async def main():
-    print("ENV =", ENV)
-    print("API_TOKEN =", API_TOKEN)
+app = FastAPI()
+bot = Bot(token=API_TOKEN)
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
 
+dp.include_router(assistant_router)
+dp.include_router(content_router)
+
+@app.post(WEBHOOK_PATH)
+async def webhook_handler(request: Request):
+    """Handle incoming updates from Telegram via webhook"""
+    try:
+        update = await request.json()
+        await dp.feed_update(bot, update)
+        return {"ok": True}
+    except Exception as e:
+        logging.error(f"Webhook error: {e}")
+        return {"ok": False, "error": str(e)}
+
+@app.on_event("startup")
+async def on_startup():
+    """Register webhook on startup"""
+    print(f"ENV = {ENV}")
+    print(f"API_TOKEN = {API_TOKEN}")
     if not API_TOKEN:
         raise RuntimeError("TELEGRAM_BOT_TOKEN / DEV_TELEGRAM_BOT_TOKEN не задан в .env")
+    
+    logging.info(f"Бот запущен (webhook), ENV={ENV}")
+    logging.info(f"Webhook URL: {WEBHOOK_URL}{WEBHOOK_PATH}")
 
-    bot = Bot(token=API_TOKEN)
-    storage = MemoryStorage()
-    dp = Dispatcher(storage=storage)
+@app.on_event("shutdown")
+async def on_shutdown():
+    """Cleanup on shutdown"""
+    await bot.session.close()
 
-    dp.include_router(assistant_router)
-    dp.include_router(content_router)
-
-    logging.info(f"Бот запущен (long polling), ENV={ENV}")
-    await dp.start_polling(bot)
-
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Railway"""
+    return {"status": "healthy", "env": ENV}
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import uvicorn
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
