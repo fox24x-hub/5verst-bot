@@ -34,15 +34,16 @@ dp.include_router(content_router)
 
 @app.post(WEBHOOK_PATH)
 async def webhook_handler(request: Request):
-    """Handle incoming updates from Telegram via webhook"""
     try:
         data = await request.json()
-        update = Update(**data)  # важно: создаём объект Update
-        await dp.feed_update(bot, update)  # сюда уже идёт Update, а не dict
+        logging.info(f"Incoming update: {data}")
+        update = Update(**data)
+        await dp.feed_update(bot, update)
         return {"ok": True}
     except Exception as e:
         logging.exception(f"Webhook error: {e}")
         return {"ok": False, "error": str(e)}
+
 
 
 @app.on_event("startup")
