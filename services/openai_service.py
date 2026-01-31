@@ -107,14 +107,12 @@ async def generate_post(
     max_tokens = 400 if platform == "telegram" else 800
     text = await _call_openai(user_content, max_tokens=max_tokens, temperature=0.85)
 
+    # Если нужно, добавляем ТОЛЬКО ссылки, без повторного тайминга
     if post_type == "event_announcement":
-        # Добавляем блок с таймингом и ссылками (если нужно прямо здесь)
-        text = (
-            f"{text}\n\n{FRIDAY_TIMING_TEMPLATE}\n\n"
-            f"{FRIDAY_LINKS_TEMPLATE}"
-        )
+        text = f"{text}\n\n{FRIDAY_LINKS_TEMPLATE}"
 
     return text
+
 
 
 async def answer_question(question: str) -> str:
