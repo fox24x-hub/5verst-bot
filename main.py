@@ -1,12 +1,12 @@
 import logging
 import os
+import uvicorn
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Update
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
-
 from handlers import assistant_router, content_router
 
 load_dotenv()
@@ -45,7 +45,6 @@ async def webhook_handler(request: Request):
         return {"ok": False, "error": str(e)}
 
 
-
 @app.on_event("startup")
 async def on_startup():
     """Register webhook on startup (логируем, а выставляешь вебхук через BotFather/скрипт)"""
@@ -55,7 +54,6 @@ async def on_startup():
         raise RuntimeError(
             "TELEGRAM_BOT_TOKEN / DEV_TELEGRAM_BOT_TOKEN не задан в .env"
         )
-
     logging.info(f"Бот запущен (webhook), ENV={ENV}")
     logging.info(f"Webhook URL (ожидаемый): {WEBHOOK_URL}{WEBHOOK_PATH}")
 
@@ -72,7 +70,6 @@ async def health_check():
     return {"status": "healthy", "env": ENV}
 
 
-
-
+if __name__ == "__main__":
     port = int(os.getenv("PORT", "8080"))
     uvicorn.run(app, host="0.0.0.0", port=port)
