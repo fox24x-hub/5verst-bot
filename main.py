@@ -1,13 +1,13 @@
 import logging
 import os
-import uvicorn
-
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Update
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from handlers import assistant_router, content_router
+
+
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -68,8 +68,3 @@ async def on_shutdown():
 async def health_check():
     """Health check endpoint for Railway"""
     return {"status": "healthy", "env": ENV}
-
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", "8080"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
