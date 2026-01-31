@@ -12,15 +12,7 @@ OPENAI_MODEL = "gpt-4o-mini"
 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 # Константы для пятничного напоминания
-FRIDAY_TIMING_TEMPLATE = (
-    "Напоминаем наше расписание:\n\n"
-    "08:30 — сбор и инструктаж волонтёров\n"
-    "08:40 — сбор участников\n"
-    "08:45 — разминка\n"
-    "08:50 — инструктаж новых участников у стелы\n"
-    "08:55 — общий брифинг\n"
-    "09:00 — старт."
-)
+
 
 FRIDAY_LINKS_TEMPLATE = (
     "Как найти нас в парке: https://5verst.ru/parkmayakovskogo/course/\n\n"
