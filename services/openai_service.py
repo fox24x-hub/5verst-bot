@@ -235,6 +235,24 @@ async def generate_post(
     return text
 
 
+async def revise_generated_post(
+    original_post: str,
+    revision_request: str,
+    platform: str = "telegram",
+) -> str:
+    user_content = (
+        "Ниже текст поста для сообщества 5 вёрст и просьба пользователя внести правки.\n"
+        "Перепиши пост с учетом запроса, сохранив факты, структуру и человечный стиль.\n"
+        "Не добавляй выдуманные факты.\n"
+        "Если это пост-напоминание или набор волонтеров, сохрани полезные блоки и ссылки, которые уже есть.\n"
+        f"Площадка: {platform}\n\n"
+        f"Исходный пост:\n{original_post}\n\n"
+        f"Запрос на правки:\n{revision_request}\n\n"
+        "Верни только итоговый текст поста."
+    )
+    return await _call_openai(user_content, max_tokens=1000, temperature=0.75)
+
+
 async def answer_question(question: str) -> str:
     user_content = (
         "Ответь на вопрос организатора 5 вёрст.\n"

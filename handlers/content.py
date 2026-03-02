@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram import types
 from aiogram.filters import Command
 from services.openai_service import generate_post, adapt_for_platform
+from services.context_service import set_last_generated_post
 from services.stats_service import track_user_action
 
 content_router = Router()
@@ -32,6 +33,7 @@ async def cmd_create_post(message: types.Message):
         post_type="announcement",
         platform="telegram",
     )
+    set_last_generated_post(message.from_user.id, post_text)
 
     await message.reply(post_text)
 

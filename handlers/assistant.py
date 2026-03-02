@@ -15,9 +15,11 @@ from services.openai_service import (
     get_available_style_keys,
     get_forced_style_key,
     is_style_debug_enabled,
+    revise_generated_post,
     set_forced_style_key,
     set_style_debug_enabled,
 )
+from services.context_service import get_last_generated_post, set_last_generated_post
 from services.stats_service import track_user_action
 
 
@@ -92,6 +94,25 @@ def save_user_settings(user_id: int, settings: dict):
 waiting_free_topic_tg: set[int] = set()
 waiting_free_topic_vk: set[int] = set()
 
+EDIT_KEYWORDS = (
+    "измени",
+    "исправ",
+    "добав",
+    "перепиши",
+    "сделай",
+    "убери",
+    "сократи",
+    "расшир",
+    "замени",
+    "передел",
+    "правк",
+)
+
+
+def _looks_like_edit_request(text: str) -> bool:
+    low = text.lower()
+    return any(word in low for word in EDIT_KEYWORDS)
+
 
 # ========= главное меню и панель =========
 
@@ -148,6 +169,7 @@ async def ask_shortcut(message: types.Message):
 async def monday_volunteers(message: types.Message):
     topic = "Пост понедельник: сбор команды волонтёров на встречу 5 вёрст."
     text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
+    set_last_generated_post(message.from_user.id, text)
     await message.answer(text, reply_markup=main_keyboard)
 
 
@@ -155,6 +177,7 @@ async def monday_volunteers(message: types.Message):
 async def friday_reminder(message: types.Message):
     topic = "Пост пятница: напоминание о встречу 5 вёрст."
     text = await generate_post(topic=topic, post_type="event_announcement", platform="telegram")
+    set_last_generated_post(message.from_user.id, text)
     await message.answer(text, reply_markup=main_keyboard)
 
 
@@ -162,6 +185,7 @@ async def friday_reminder(message: types.Message):
 async def sunday_thanks(message: types.Message):
     topic = "Благодарность волонтёрам за помощь."
     text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
+    set_last_generated_post(message.from_user.id, text)
     await message.answer(text, reply_markup=main_keyboard)
 
 
@@ -173,6 +197,7 @@ async def monday_volunteers_template(message: types.Message):
         "волонтёров и приглашение записаться в комментариях."
     )
     text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
+    set_last_generated_post(message.from_user.id, text)
     await message.answer(text)
 
 
@@ -184,6 +209,7 @@ async def friday_reminder_template(message: types.Message):
         "и написать в комментариях, кто придёт."
     )
     text = await generate_post(topic=topic, post_type="event_announcement", platform="telegram")
+    set_last_generated_post(message.from_user.id, text)
     await message.answer(text)
 
 
@@ -195,6 +221,7 @@ async def sunday_thanks_template(message: types.Message):
         "новых людей попробовать себя в волонтёрстве."
     )
     text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
+    set_last_generated_post(message.from_user.id, text)
     await message.answer(text)
 
 
@@ -271,6 +298,7 @@ async def report_highlight(message: types.Message, state: FSMContext):
         topic += f"\nОсобенный момент: {highlight}"
 
     text = await generate_post(topic=topic, post_type="event_report", platform="telegram")
+    set_last_generated_post(message.from_user.id, text)
     await message.answer(text, reply_markup=main_keyboard)
 
 
@@ -527,6 +555,7 @@ async def universal_handler(message: types.Message):
             post_type="announcement",
             platform="telegram",
         )
+        set_last_generated_post(user_id, text)
         await message.answer(text, reply_markup=main_keyboard)
         return
 
@@ -539,6 +568,7 @@ async def universal_handler(message: types.Message):
             post_type="announcement",
             platform="vk",
         )
+        set_last_generated_post(user_id, text)
         await message.answer(text, reply_markup=main_keyboard)
         return
 
@@ -550,9 +580,33 @@ async def universal_handler(message: types.Message):
         await cmd_stats_posts(message)
         return
 
-    await message.answer(
-        "Не понял команду. Используй кнопки:",
-        reply_markup=main_keyboard,
-    )
+    if _looks_like_edit_request(text):
+        previous_post = get_last_generated_post(user_id)
+        if not previous_post:
+            await message.answer(
+                "Не нашёл предыдущий сгенерированный пост для правок. "
+                "Сначала создай пост, потом напиши, что изменить.",
+                reply_markup=main_keyboard,
+            )
+            return
+
+        await message.answer("Принял, вношу правки в последний пост...")
+        updated_post = await revise_generated_post(
+            original_post=previous_post,
+            revision_request=text,
+            platform="telegram",
+        )
+        set_last_generated_post(user_id, updated_post)
+        await message.answer(updated_post, reply_markup=main_keyboard)
+        return
+
+    if len(text) >= 8:
+        track_user_action(user_id, "ask_question")
+        await message.answer("Понял, сейчас отвечу...")
+        reply = await answer_question(text)
+        await message.answer(reply, reply_markup=main_keyboard)
+        return
+
+    await message.answer("Не понял запрос. Используй кнопки или /help.", reply_markup=main_keyboard)
 
 
