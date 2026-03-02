@@ -87,7 +87,7 @@ waiting_free_topic_vk: set[int] = set()
 
 # ========= главное меню и панель =========
 
-@assistant_router.message(Command("start", "panel", "help"))
+@assistant_router.message(Command("start"))
 async def show_main_menu(message: types.Message):
     await message.answer(
         "🚀 **5 ВЁРСТ — Помощник контента**\n\n"
@@ -252,7 +252,8 @@ async def report_highlight(message: types.Message, state: FSMContext):
     first_timers = data.get("first_timers", 0)
     guests = data.get("guests", 0)
     volunteers = data.get("volunteers", 0)
-    highlight = "" if message.text.lower() == "нет" else message.text.strip()
+    raw_text = (message.text or "").strip()
+    highlight = "" if raw_text.lower() == "нет" else raw_text
 
     topic = (
         f"Отчёт встречи: {total} участников, {first_timers} новичков, "
@@ -298,6 +299,10 @@ async def cmd_add_example(message: types.Message, state: FSMContext):
 
 @assistant_router.message(AddExampleStates.waiting_example)
 async def save_example(message: types.Message, state: FSMContext):
+    if not message.text:
+        await message.answer("Отправь текстовый пример поста.")
+        return
+
     if message.text.startswith("/"):
         await state.clear()
         return
@@ -384,6 +389,7 @@ async def cmd_ask(message: types.Message):
         return
 
     question = args[1].strip()
+    track_user_action(message.from_user.id, "ask_question")
     await message.reply("🤔 Думаю над ответом...")
     answer = await answer_question(question)
     await message.reply(answer, reply_markup=main_keyboard)
@@ -451,10 +457,19 @@ async def cmd_dump_examples(message: types.Message):
 @assistant_router.message()
 async def universal_handler(message: types.Message):
     user_id = message.from_user.id
+    text = (message.text or "").strip()
+
+    if not text:
+        await message.answer(
+            "Я работаю с текстовыми сообщениями. Используй кнопки меню:",
+            reply_markup=main_keyboard,
+        )
+        return
 
     if user_id in waiting_free_topic_tg:
         waiting_free_topic_tg.discard(user_id)
-        topic = message.text.strip()
+        topic = text
+        track_user_action(user_id, "generate_post")
         text = await generate_post(
             topic=topic,
             post_type="announcement",
@@ -465,7 +480,8 @@ async def universal_handler(message: types.Message):
 
     if user_id in waiting_free_topic_vk:
         waiting_free_topic_vk.discard(user_id)
-        topic = message.text.strip()
+        topic = text
+        track_user_action(user_id, "generate_post_vk")
         text = await generate_post(
             topic=topic,
             post_type="announcement",
@@ -474,11 +490,11 @@ async def universal_handler(message: types.Message):
         await message.answer(text, reply_markup=main_keyboard)
         return
 
-    if message.text.startswith("/ask"):
+    if text.startswith("/ask"):
         await cmd_ask(message)
         return
 
-    if message.text == "/stats_posts":
+    if text == "/stats_posts":
         await cmd_stats_posts(message)
         return
 

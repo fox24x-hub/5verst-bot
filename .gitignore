@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.idea/
+
+data/user_settings.json
+data/users_stats.json

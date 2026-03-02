@@ -1,13 +1,13 @@
-import os
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
+from openai import OpenAIError
+
+from config import settings
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-print("OPENAI_API_KEY in openai_service:", (OPENAI_API_KEY or "")[:8])
-
-OPENAI_MODEL = "gpt-4o-mini"
+OPENAI_API_KEY = settings.openai_api_key
+OPENAI_MODEL = settings.openai_model
 
 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
@@ -45,16 +45,19 @@ async def _call_openai(
             "OPENAI_API_KEY не найден. Проверь файл .env и перезапусти бота."
         )
 
-    response = await client.chat.completions.create(
-        model=OPENAI_MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_content},
-        ],
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
-    return response.choices[0].message.content.strip()
+    try:
+        response = await client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_content},
+            ],
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        return response.choices[0].message.content.strip()
+    except OpenAIError as exc:
+        return f"Ошибка OpenAI API: {exc}"
 
 
 async def generate_post(
