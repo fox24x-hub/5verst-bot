@@ -9,7 +9,15 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 from keyboards import main_keyboard, helper_menu, posts_menu, remove_keyboard, templates_keyboard
-from services.openai_service import generate_post, answer_question
+from services.openai_service import (
+    answer_question,
+    generate_post,
+    get_available_style_keys,
+    get_forced_style_key,
+    is_style_debug_enabled,
+    set_forced_style_key,
+    set_style_debug_enabled,
+)
 from services.stats_service import track_user_action
 
 
@@ -452,6 +460,50 @@ async def cmd_dump_examples(message: types.Message):
     except Exception as e:
         await message.answer(f"❌ Error sending file: {str(e)}")
         
+@assistant_router.message(Command("style_debug"))
+async def cmd_style_debug(message: types.Message):
+    from services.stats_service import ADMIN_ID
+
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("? This command is only available for administrator.")
+        return
+
+    args = (message.text or "").split(maxsplit=1)
+    if len(args) == 1:
+        forced = get_forced_style_key() or "auto"
+        debug_state = "on" if is_style_debug_enabled() else "off"
+        styles = ", ".join(get_available_style_keys())
+        await message.answer(
+            "style_debug status:\n"
+            f"- debug output: {debug_state}\n"
+            f"- style mode: {forced}\n"
+            f"- available styles: {styles}\n\n"
+            "Usage:\n"
+            "/style_debug on|off\n"
+            "/style_debug auto|warm|energetic|calm"
+        )
+        return
+
+    value = args[1].strip().lower()
+    if value in {"on", "off"}:
+        set_style_debug_enabled(value == "on")
+        state = "enabled" if value == "on" else "disabled"
+        await message.answer(f"Style debug output {state}.")
+        return
+
+    if value == "auto":
+        set_forced_style_key(None)
+        await message.answer("Style mode set to auto (random).")
+        return
+
+    try:
+        set_forced_style_key(value)
+        await message.answer(f"Forced style set to: {value}")
+    except ValueError:
+        styles = ", ".join(get_available_style_keys())
+        await message.answer(f"Unknown style '{value}'. Available: {styles}, auto")
+
+
 # ========= универсальный хендлер =========
 
 @assistant_router.message()
