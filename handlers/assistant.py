@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 
 from aiogram import Router, F, types
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
@@ -114,48 +114,61 @@ def _looks_like_edit_request(text: str) -> bool:
     return any(word in low for word in EDIT_KEYWORDS)
 
 
+async def _reset_user_interaction_state(user_id: int, state: FSMContext) -> None:
+    waiting_free_topic_tg.discard(user_id)
+    waiting_free_topic_vk.discard(user_id)
+    await state.clear()
+
+
 # ========= главное меню и панель =========
 
-@assistant_router.message(Command("start"))
-async def show_main_menu(message: types.Message):
+@assistant_router.message(StateFilter("*"), Command("start"))
+async def show_main_menu(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     await message.answer(
-        "🚀 **5 ВЁРСТ — Помощник контента**\n\n"
+        "🚀 **5 ВЁРСТ - Помощник контента**\n\n"
         "Создавай посты, управляй волонтёрами и развивай сообщество!",
         reply_markup=main_keyboard,
         parse_mode="Markdown",
     )
 
 
-@assistant_router.message(Command("panel"))
-async def show_panel(message: types.Message):
+@assistant_router.message(StateFilter("*"), Command("panel"))
+async def show_panel(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     await message.answer(
         "Выбери шаблон поста:",
         reply_markup=templates_keyboard,
     )
 
 
-@assistant_router.message(F.text == "🔙 Назад")
-async def go_back(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🔙 Назад")
+async def go_back(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     await message.answer("Главное меню:", reply_markup=main_keyboard)
 
 
-@assistant_router.message(F.text == "🚀 Помощник")
-async def show_helper_menu(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🚀 Помощник")
+async def show_helper_menu(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     await message.answer("Что нужно сделать?", reply_markup=helper_menu)
 
 
-@assistant_router.message(F.text == "📝 Создать пост")
-async def show_posts_menu(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "📝 Создать пост")
+async def show_posts_menu(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     await message.answer("Выбери тип поста:", reply_markup=posts_menu)
 
 
-@assistant_router.message(F.text == "📊 Статистика")
-async def stats_shortcut(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "📊 Статистика")
+async def stats_shortcut(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     await cmd_stats_posts(message)
 
 
-@assistant_router.message(F.text == "❓ Спросить GPT")
-async def ask_shortcut(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "❓ Спросить GPT")
+async def ask_shortcut(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     await message.answer(
         "💡 Напиши вопрос после /ask:\n\n"
         "/ask Как сделать пост про волонтёров?",
@@ -165,32 +178,36 @@ async def ask_shortcut(message: types.Message):
 
 # ========= кнопки с готовыми шаблонами =========
 
-@assistant_router.message(F.text == "🧊 Волонтёры")
-async def monday_volunteers(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🧊 Волонтёры")
+async def monday_volunteers(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     topic = "Пост понедельник: сбор команды волонтёров на встречу 5 вёрст."
     text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
     set_last_generated_post(message.from_user.id, text)
     await message.answer(text, reply_markup=main_keyboard)
 
 
-@assistant_router.message(F.text == "🔔 Напоминание")
-async def friday_reminder(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🔔 Напоминание")
+async def friday_reminder(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     topic = "Пост пятница: напоминание о встречу 5 вёрст."
     text = await generate_post(topic=topic, post_type="event_announcement", platform="telegram")
     set_last_generated_post(message.from_user.id, text)
     await message.answer(text, reply_markup=main_keyboard)
 
 
-@assistant_router.message(F.text == "🙏 Спасибо волонтёрам")
-async def sunday_thanks(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🙏 Спасибо волонтёрам")
+async def sunday_thanks(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     topic = "Благодарность волонтёрам за помощь."
-    text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
+    text = await generate_post(topic=topic, post_type="volunteer_thanks", platform="telegram")
     set_last_generated_post(message.from_user.id, text)
     await message.answer(text, reply_markup=main_keyboard)
 
 
-@assistant_router.message(F.text == "🧊 Пн: волонтёры")
-async def monday_volunteers_template(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🧊 Пн: волонтёры")
+async def monday_volunteers_template(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     topic = (
         "Пост понедельник: сбор команды волонтёров на ближайшую субботнюю встречу "
         "5 вёрст. Вступление через погоду и настроение недели, затем список позиций "
@@ -201,8 +218,9 @@ async def monday_volunteers_template(message: types.Message):
     await message.answer(text)
 
 
-@assistant_router.message(F.text == "🔔 Пт: напоминание")
-async def friday_reminder_template(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🔔 Пт: напоминание")
+async def friday_reminder_template(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     topic = (
         "Пост пятница: напоминание участникам о завтрашней встрече 5 вёрст. "
         "Напомни время, место, формат (можно идти пешком), предложи взять друзей "
@@ -213,22 +231,23 @@ async def friday_reminder_template(message: types.Message):
     await message.answer(text)
 
 
-@assistant_router.message(F.text == "🙏 Вс: спасибо волонтёрам")
-async def sunday_thanks_template(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "🙏 Вс: спасибо волонтёрам")
+async def sunday_thanks_template(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     topic = (
         "Пост воскресенье: благодарность волонтёрам за прошедшую встречу 5 вёрст. "
         "Подчеркни, что без волонтёров встреча бы не состоялась, перечисли роли и пригласи "
         "новых людей попробовать себя в волонтёрстве."
     )
-    text = await generate_post(topic=topic, post_type="volunteer_call", platform="telegram")
+    text = await generate_post(topic=topic, post_type="volunteer_thanks", platform="telegram")
     set_last_generated_post(message.from_user.id, text)
     await message.answer(text)
 
 
 # ========= FSM отчёта =========
 
-@assistant_router.message(F.text == "📊 Отчёт")
-@assistant_router.message(F.text == "📊 Сб: отчёт")
+@assistant_router.message(StateFilter("*"), F.text == "📊 Отчёт")
+@assistant_router.message(StateFilter("*"), F.text == "📊 Сб: отчёт")
 async def saturday_report_start(message: types.Message, state: FSMContext):
     await state.set_state(ReportStates.waiting_total)
     await message.answer(
@@ -304,8 +323,9 @@ async def report_highlight(message: types.Message, state: FSMContext):
 
 # ========= свободные посты =========
 
-@assistant_router.message(F.text == "📝 Свободный пост")
-async def free_post_telegram(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "📝 Свободный пост")
+async def free_post_telegram(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     waiting_free_topic_tg.add(message.from_user.id)
     await message.answer(
         "Напиши тему или черновой текст поста для Telegram.\n"
@@ -314,9 +334,10 @@ async def free_post_telegram(message: types.Message):
     )
 
 
-@assistant_router.message(F.text == "📝 Свободный пост (VK)")
-@assistant_router.message(F.text == "📝 VK пост")
-async def free_post_vk(message: types.Message):
+@assistant_router.message(StateFilter("*"), F.text == "📝 Свободный пост (VK)")
+@assistant_router.message(StateFilter("*"), F.text == "📝 VK пост")
+async def free_post_vk(message: types.Message, state: FSMContext):
+    await _reset_user_interaction_state(message.from_user.id, state)
     waiting_free_topic_vk.add(message.from_user.id)
     await message.answer(
         "Напиши тему или черновой текст поста для ВКонтакте.\n"
